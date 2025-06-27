@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>야구장 좌석 선택 &amp; 미리보기</title>
+  <style>
+    /* 전체 리셋 & 박스 사이징 */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: sans-serif;
+      display: flex;
+      padding: 20px;
+    }
+
+    /* 헤더 */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 100px;
+      background: #fff;
+      border-bottom: 1px solid #fe9000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 100;
+    }
+    header img {
+      height: 80px;
+    }
+    /* 게시판 링크 */
+    header nav a {
+      text-decoration: none;
+      color: #333;
+      font-size: 18px;
+      padding: 8px 12px;
+      border: 1px solid #fe9000;
+      border-radius: 4px;
+      transition: background .2s;
+    }
+    header nav a:hover {
+      background: #fe9000;
+      color: #fff;
+    }
+
+    /* 메인 컨테이너 */
+    .main {
+      margin-top: 120px; /* 헤더 높이 + 여유 */
+      display: flex;
+      width: 100%;
+    }
+
+    /* 좌석 컨테이너 */
+    #seat-container {
+      display: grid;
+      grid-template-columns: repeat(15, 40px);
+      grid-template-rows: repeat(10, 40px);
+      gap: 5px;
+    }
+    .seat {
+      width: 40px; height: 40px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f0f0f0;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .seat.selected {
+      background: #4caf50;
+      color: #fff;
+    }
+
+    /* 정보 패널 */
+    #seat-info {
+      margin-left: 40px;
+      width: 200px;
+    }
+    #seat-info h2 {
+      color: rgb(255, 140, 0);
+      text-shadow: 2px 2px 6px rgb(12, 12, 12);
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+    #seat-info p {
+      line-height: 1.5;
+    }
+    #seat-info img {
+      width: 100%;
+      border-radius: 4px;
+      margin-top: 10px;
+      background: #eee;
+    }
+    .hidden { display: none; }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <!-- 좌측 로고 -->
+    <img src="./img/logo_T.png" alt="티켓헬퍼 로고">
+    <!-- 우측 게시판 링크 -->
+    <nav>
+      <a href="#seat-container">야구장</a>
+    </nav>
+  </header>
+
+  <div class="main">
+    <!-- 좌석 그리드 -->
+    <div id="seat-container"></div>
+
+    <!-- 선택된 좌석 정보 & 사진 -->
+    <div id="seat-info">
+      <h2>좌석 정보</h2>
+      <p id="info-text">좌석을 선택해주세요.</p>
+      <img id="seat-img" src="" alt="좌석 미리보기" class="hidden">
+    </div>
+  </div>
+
+  <script>
+    const ROWS = 10, COLS = 15;
+
+    // 행별 가격
+    const priceByRow = {
+      1: '₩120,000', 2: '₩110,000', 3: '₩100,000',
+      4: '₩90,000',  5: '₩80,000',  6: '₩70,000',
+      7: '₩60,000',  8: '₩50,000',  9: '₩40,000',
+      10:'₩30,000'
+    };
+
+    const imageBySeat = {
+      '1A': './img/1A.jpg',
+      '2B': './img/2B.jpg',
+      '3C': './img/3C.jpg',
+    };
+
+    const container = document.getElementById('seat-container');
+    const infoText  = document.getElementById('info-text');
+    const seatImg   = document.getElementById('seat-img');
+
+    // 좌석 버튼
+    for (let r = 1; r <= ROWS; r++) {
+      for (let c = 1; c <= COLS; c++) {
+        const btn = document.createElement('button');
+        btn.className = 'seat';
+        const label = r + String.fromCharCode(64 + c);
+        btn.textContent   = label;
+        btn.dataset.row   = r;
+        btn.dataset.col   = c;
+        btn.dataset.label = label;
+        container.appendChild(btn);
+      }
+    }
+
+    // 클릭 이벤트
+    container.addEventListener('click', e => {
+      if (!e.target.matches('.seat')) return;
+
+      // 이전 선택 해제
+      document.querySelectorAll('.seat.selected')
+        .forEach(s => s.classList.remove('selected'));
+
+      const seat  = e.target;
+      const row   = seat.dataset.row;
+      const col   = seat.dataset.col;
+      const label = seat.dataset.label;
+      const price = priceByRow[row] || '정보 없음';
+
+      // 선택 표시
+      seat.classList.add('selected');
+
+      // 정보 텍스트 업데이트
+      infoText.innerHTML = `
+        <strong>좌석:</strong> ${label}<br>
+        <strong>가격:</strong> ${price}<br>
+        <strong>위치:</strong> ${row}구역, ${col}열
+      `;
+
+      // 이미지 업데이트
+      const imgSrc = imageBySeat[label];
+      if (imgSrc) {
+        seatImg.src = imgSrc;
+        seatImg.classList.remove('hidden');
+      } else {
+        seatImg.classList.add('hidden');
+      }
+    });
+  </script>
+
+</body>
+</html>
