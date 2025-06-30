@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>야구장 좌석 선택 &amp; 미리보기</title>
+  <title>야구장 좌석 선택 & 미리보기</title>
   <style>
     /* 전체 리셋 & 박스 사이징 */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,10 +26,7 @@
       padding: 0 20px;
       z-index: 100;
     }
-    header img {
-      height: 80px;
-    }
-    /* 게시판 링크 */
+    header img { height: 80px; }
     header nav a {
       text-decoration: none;
       color: #333;
@@ -38,6 +35,7 @@
       border: 1px solid #fe9000;
       border-radius: 4px;
       transition: background .2s;
+      margin-left: 10px;
     }
     header nav a:hover {
       background: #fe9000;
@@ -49,11 +47,6 @@
       margin-top: 120px; /* 헤더 높이 + 여유 */
       display: flex;
       width: 100%;
-    }
-
-    main img{
-      width: 400px;
-      height: 100px;
     }
 
     /* 좌석 컨테이너 */
@@ -70,6 +63,9 @@
       background: #f0f0f0;
       cursor: pointer;
       font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .seat.selected {
       background: #4caf50;
@@ -79,7 +75,7 @@
     /* 정보 패널 */
     #seat-info {
       margin-left: 40px;
-      width: 200px;
+      width: 240px;
     }
     #seat-info h2 {
       color: rgb(255, 140, 0);
@@ -89,6 +85,11 @@
     }
     #seat-info p {
       line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    #seat-info .detail {
+      font-size: 13px;
+      color: #666;
     }
     #seat-info img {
       width: 100%;
@@ -97,15 +98,12 @@
       background: #eee;
     }
     .hidden { display: none; }
-
   </style>
 </head>
 <body>
 
   <header>
-    <!-- 좌측 로고 -->
-    <img src="./logo_T.png" alt="티켓헬퍼 로고">
-    <!-- 우측 게시판 링크 -->
+    <img src="./img/logo_T.png" alt="티켓헬퍼 로고">
     <nav>
       <a href="#seat-container">야구장</a>
     </nav>
@@ -119,11 +117,8 @@
     <div id="seat-info">
       <h2>좌석 정보</h2>
       <p id="info-text">좌석을 선택해주세요.</p>
+      <p id="detail-text" class="detail"></p>
       <img id="seat-img" src="" alt="좌석 미리보기" class="hidden">
-    </div>
-
-    <div>
-    <img src="./eagles_park.png" alt="ballpark">
     </div>
   </div>
 
@@ -138,26 +133,37 @@
       10:'₩30,000'
     };
 
+    // 좌석별 미리보기 이미지
     const imageBySeat = {
-      '1A': './1A.jpg',
-      '2B': './2B.jpg',
-      '3C': './3C.jpg',
+      '1A': './img/1A.jpg',
+      '2B': './img/2B.jpg',
+      '3C': './img/3C.jpg',
     };
 
-    const container = document.getElementById('seat-container');
-    const infoText  = document.getElementById('info-text');
-    const seatImg   = document.getElementById('seat-img');
+    // 좌석별 추가 안내 문구
+    const infoBySeat = {
+      '1A': '무릎 공간 30cm, 옆 좌석과 거리 30cm, 1루 폴대가 시야 일부 가림',
+      '1B': '무릎 공간 30cm, 옆 좌석과 거리 30cm, 시야 양호',
+      '2A': '무릎 공간 28cm, 옆 좌석과 거리 32cm, 시야 양호',
+      '3C': '무릎 공간 25cm, 옆 좌석과 거리 30cm, 홈 플레이트 바로 옆이라 생동감 높음',
+      // 필요한 만큼 추가…
+    };
 
-    // 좌석 버튼
+    const container  = document.getElementById('seat-container');
+    const infoText   = document.getElementById('info-text');
+    const detailText = document.getElementById('detail-text');
+    const seatImg    = document.getElementById('seat-img');
+
+    // 좌석 버튼 생성
     for (let r = 1; r <= ROWS; r++) {
       for (let c = 1; c <= COLS; c++) {
         const btn = document.createElement('button');
-        btn.className = 'seat';
-        const label = r + String.fromCharCode(64 + c);
-        btn.textContent   = label;
-        btn.dataset.row   = r;
-        btn.dataset.col   = c;
-        btn.dataset.label = label;
+        btn.className    = 'seat';
+        const label      = r + String.fromCharCode(64 + c);
+        btn.textContent  = label;
+        btn.dataset.row  = r;
+        btn.dataset.col  = c;
+        btn.dataset.label= label;
         container.appendChild(btn);
       }
     }
@@ -172,19 +178,21 @@
 
       const seat  = e.target;
       const row   = seat.dataset.row;
-      const col   = seat.dataset.col;
       const label = seat.dataset.label;
       const price = priceByRow[row] || '정보 없음';
 
       // 선택 표시
       seat.classList.add('selected');
 
-      // 정보 텍스트 업데이트
+      // 기본 정보 업데이트
       infoText.innerHTML = `
         <strong>좌석:</strong> ${label}<br>
         <strong>가격:</strong> ${price}<br>
-        <strong>위치:</strong> ${row}구역, ${col}열
+        <strong>위치:</strong> ${row}구역, ${seat.dataset.col}열
       `;
+
+      // 추가 안내 문구 업데이트
+      detailText.textContent = infoBySeat[label] || '추가 안내 정보가 없습니다.';
 
       // 이미지 업데이트
       const imgSrc = imageBySeat[label];
